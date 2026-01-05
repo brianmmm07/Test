@@ -89,9 +89,22 @@ MAX_PAPERS_PER_KEYWORD=5
 SCHEDULE_TIME=09:00
 ```
 
+## 🚀 Quick Deploy (Recommended)
+
+**Want to run this automatically without managing servers?**
+
+### GitHub Actions (FREE) - Best Option
+1. Push this repo to GitHub
+2. Add your API keys as GitHub Secrets
+3. It runs automatically every day!
+
+👉 **[See Full Deployment Guide](DEPLOYMENT.md)** for GitHub Actions, Railway, Render, Docker, and AWS Lambda options.
+
+---
+
 ## Usage
 
-### Run Once
+### Run Locally Once
 
 To run the summarizer immediately:
 
@@ -168,16 +181,20 @@ Edit `.env` to customize:
 
 ```
 Test/
-├── main.py              # Main application logic
-├── scheduler.py         # Daily scheduling
-├── arxiv_fetcher.py     # arXiv API integration
-├── summarizer.py        # Claude AI summarization
-├── notion_client.py     # Notion API integration
-├── config.py            # Configuration management
-├── requirements.txt     # Python dependencies
-├── .env.example         # Environment template
-├── .env                 # Your configuration (not in git)
-└── README.md           # This file
+├── main.py                          # Main application logic
+├── scheduler.py                     # Daily scheduling
+├── arxiv_fetcher.py                 # arXiv API integration
+├── summarizer.py                    # Claude AI summarization
+├── notion_client.py                 # Notion API integration
+├── config.py                        # Configuration management
+├── requirements.txt                 # Python dependencies
+├── .env.example                     # Environment template
+├── .github/workflows/               # GitHub Actions for auto-deployment
+│   └── daily-summarizer.yml
+├── Dockerfile                       # Docker containerization
+├── docker-compose.yml               # Docker Compose config
+├── DEPLOYMENT.md                    # Deployment guide
+└── README.md                        # This file
 ```
 
 ## How It Works
