@@ -6,6 +6,7 @@ from summarizer import PaperSummarizer
 from notion_client import NotionClient
 from paper_database import PaperDatabase
 from similarity import PaperSimilarity
+from figure_extractor import FigureExtractor
 from config import Config
 
 def run_daily_summary():
@@ -27,6 +28,7 @@ def run_daily_summary():
         )
         paper_db = PaperDatabase()
         similarity_calc = PaperSimilarity()
+        figure_extractor = FigureExtractor()
 
         # Verify Notion connection
         print("Verifying Notion connection...")
@@ -63,6 +65,13 @@ def run_daily_summary():
                 embedding = similarity_calc.compute_embedding(paper)
                 paper['embedding'] = embedding
 
+                # Extract figures from PDF (for visual big picture)
+                figure_paths = []
+                try:
+                    figure_paths = figure_extractor.get_paper_figures(paper, max_figures=2)
+                except Exception as e:
+                    print(f"    Could not extract figures: {e}")
+
                 # Find similar papers
                 if existing_papers:
                     print("  Finding similar papers...")
@@ -84,15 +93,15 @@ def run_daily_summary():
                 print("  Generating AI summary...")
                 summary = summarizer.summarize_paper(paper)
 
-                # Create markdown document with similar papers
-                print("  Creating markdown with related papers...")
+                # Create markdown document with similar papers and figures
+                print("  Creating markdown with figures and related papers...")
                 markdown = summarizer.create_markdown_summary(
-                    paper, summary, similar_papers=similar_papers
+                    paper, summary, similar_papers=similar_papers, figure_paths=figure_paths
                 )
 
                 # Add to Notion
                 print("  Adding to Notion...")
-                notion_page_id = notion_client.add_paper(paper, markdown, similar_papers=similar_papers)
+                notion_page_id = notion_client.add_paper(paper, markdown, similar_papers=similar_papers, figure_paths=figure_paths)
 
                 if notion_page_id:
                     # Add to local database

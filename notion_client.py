@@ -30,7 +30,7 @@ class NotionClient:
             print("Make sure the database is shared with your Notion integration.")
             raise
 
-    def add_paper(self, paper: Dict, markdown_summary: str, similar_papers: list = None) -> str:
+    def add_paper(self, paper: Dict, markdown_summary: str, similar_papers: list = None, figure_paths: list = None) -> str:
         """
         Add a paper summary to the Notion database.
 
@@ -38,6 +38,7 @@ class NotionClient:
             paper: Paper dictionary
             markdown_summary: Full markdown summary
             similar_papers: List of (paper_dict, similarity_score) tuples
+            figure_paths: List of paths to extracted figure images
 
         Returns:
             Notion page ID if successful, None otherwise
@@ -162,6 +163,25 @@ class NotionClient:
                         "rich_text": [{"type": "text", "text": {"content": line[4:]}}]
                     }
                 })
+            # Image (markdown syntax: ![alt](path))
+            elif line.startswith('![') and '](' in line:
+                # Extract alt text and path
+                import re
+                match = re.match(r'!\[(.*?)\]\((.*?)\)', line)
+                if match:
+                    alt_text = match.group(1)
+                    # Create a callout block noting the figure
+                    blocks.append({
+                        "object": "block",
+                        "type": "callout",
+                        "callout": {
+                            "rich_text": [{
+                                "type": "text",
+                                "text": {"content": f"📊 {alt_text} - See figures in the PDF linked above"}
+                            }],
+                            "icon": {"emoji": "📊"}
+                        }
+                    })
             # Bullet point
             elif line.startswith('- ') or line.startswith('* '):
                 blocks.append({

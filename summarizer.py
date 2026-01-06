@@ -39,9 +39,6 @@ Please provide a structured summary with the following sections:
 ## Overview
 A brief overview (2-3 sentences) of what the paper is about.
 
-## Key Big Picture
-The main insight or core idea of this work - what's the key innovation or perspective shift? (2-3 sentences)
-
 ## Key Contributions
 List 3-5 main contributions or findings as bullet points.
 
@@ -49,7 +46,22 @@ List 3-5 main contributions or findings as bullet points.
 Brief description of the approach or method used (2-3 sentences).
 
 ## Key Equations
-If the paper presents important mathematical formulations or equations, describe the key ones. If no significant equations, write "No key equations presented" or describe the main technical formulation conceptually.
+IMPORTANT: Format all equations using LaTeX notation for proper rendering in Notion/Markdown.
+- Use `$$` for block equations (displayed equations on their own line)
+- Use `$` for inline equations (within text)
+- Use proper LaTeX commands with double backslashes
+- Examples:
+  * Block: $$\\mathcal{{L}} = \\mathbb{{E}}_{{x,t,\\epsilon}}[||\\epsilon - \\epsilon_\\theta(x_t, t)||^2]$$
+  * Inline: The loss function $\\mathcal{{L}}$ is optimized during training
+  * Greek letters: $\\alpha$, $\\beta$, $\\theta$, $\\epsilon$
+  * Subscripts/superscripts: $x_t$, $x^2$
+
+If the paper presents key mathematical formulations:
+- Format them properly in LaTeX
+- Explain what each equation represents
+- Use proper mathematical notation
+
+If no significant equations in abstract, write: "No key equations presented in abstract."
 
 ## Benchmark Results
 If the abstract mentions performance metrics, benchmarks, or quantitative results:
@@ -69,6 +81,11 @@ If no benchmark results are in the abstract, write: "Benchmark results not detai
 
 ## Potential Impact
 How this work could influence the field or be applied (2-3 sentences).
+
+CRITICAL:
+- ALL equations must use proper LaTeX with $ or $$
+- Use double backslashes for LaTeX commands (\\alpha, \\beta, \\mathcal, etc.)
+- Format equations for proper rendering in Notion
 
 Format everything in clean, well-structured markdown."""
 
@@ -108,9 +125,6 @@ This paper titled "{paper['title']}" by {authors_str} was published on {paper['p
 ## Abstract
 {paper['summary'][:500]}{'...' if len(paper['summary']) > 500 else ''}
 
-## Key Big Picture
-(Summary generation failed - please refer to the full paper)
-
 ## Key Contributions
 - Please refer to the full paper for detailed contributions
 
@@ -130,7 +144,7 @@ Please refer to the full paper for analysis.
 Please refer to the full paper.
 """
 
-    def create_markdown_summary(self, paper: Dict, summary: str, similar_papers: list = None) -> str:
+    def create_markdown_summary(self, paper: Dict, summary: str, similar_papers: list = None, figure_paths: list = None) -> str:
         """
         Create a complete markdown document for a paper.
 
@@ -138,6 +152,7 @@ Please refer to the full paper.
             paper: Paper dictionary
             summary: Generated summary
             similar_papers: List of (paper_dict, similarity_score) tuples
+            figure_paths: List of paths to extracted figures
 
         Returns:
             Complete markdown document
@@ -159,11 +174,20 @@ Please refer to the full paper.
 **PDF:** [{paper['id']}]({paper['pdf_url']})
 
 ---
-
-{summary}
-
----
 """
+
+        # Add figures section if available (replaces textual "Key Big Picture")
+        if figure_paths and len(figure_paths) > 0:
+            markdown += "\n## 📊 Key Figures (Big Picture)\n\n"
+            markdown += "Visual overview extracted from the paper:\n\n"
+            for i, fig_path in enumerate(figure_paths, 1):
+                # Reference the figure path - will be uploaded to Notion separately
+                markdown += f"**Figure {i}:**\n\n"
+                markdown += f"![Figure {i}]({fig_path})\n\n"
+            markdown += "---\n"
+
+        # Add the AI-generated summary
+        markdown += f"\n{summary}\n\n---\n"
 
         # Add related papers section if available
         if similar_papers:

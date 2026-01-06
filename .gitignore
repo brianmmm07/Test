@@ -17,3 +17,5 @@ logs/
 .DS_Store
 papers.db
 *.db
+paper_figures/
+*.pdf
