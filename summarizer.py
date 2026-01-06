@@ -24,27 +24,58 @@ class PaperSummarizer:
         Returns:
             Markdown-formatted summary
         """
-        prompt = f"""Please analyze this academic paper and provide a concise summary in markdown format.
+        prompt = f"""Please analyze this academic paper and provide a comprehensive summary in markdown format.
 
 Title: {paper['title']}
 Authors: {', '.join(paper['authors'][:5])}
 Published: {paper['published']}
+Category: {paper.get('paper_category', 'General')}
 
 Abstract:
 {paper['summary']}
 
-Please provide:
-1. A brief overview (2-3 sentences)
-2. Key contributions or findings (3-5 bullet points)
-3. Methodology (if applicable, 1-2 sentences)
-4. Potential impact or applications
+Please provide a structured summary with the following sections:
 
-Format the response in clean markdown."""
+## Overview
+A brief overview (2-3 sentences) of what the paper is about.
+
+## Key Big Picture
+The main insight or core idea of this work - what's the key innovation or perspective shift? (2-3 sentences)
+
+## Key Contributions
+List 3-5 main contributions or findings as bullet points.
+
+## Methodology
+Brief description of the approach or method used (2-3 sentences).
+
+## Key Equations
+If the paper presents important mathematical formulations or equations, describe the key ones. If no significant equations, write "No key equations presented" or describe the main technical formulation conceptually.
+
+## Benchmark Results
+If the abstract mentions performance metrics, benchmarks, or quantitative results:
+- Present key results in a simple markdown table format
+- Include dataset names, metrics, and values
+- Compare to baselines if mentioned
+
+If no benchmark results are in the abstract, write: "Benchmark results not detailed in abstract - refer to full paper."
+
+## Pros & Cons
+
+**Pros:**
+- List 2-3 strengths or advantages of this approach
+
+**Cons:**
+- List 2-3 limitations or potential weaknesses (these might be implicit or inferred)
+
+## Potential Impact
+How this work could influence the field or be applied (2-3 sentences).
+
+Format everything in clean, well-structured markdown."""
 
         try:
             message = self.client.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=1024,
+                max_tokens=2048,  # Increased for more comprehensive summaries
                 messages=[
                     {"role": "user", "content": prompt}
                 ]
@@ -76,6 +107,27 @@ This paper titled "{paper['title']}" by {authors_str} was published on {paper['p
 
 ## Abstract
 {paper['summary'][:500]}{'...' if len(paper['summary']) > 500 else ''}
+
+## Key Big Picture
+(Summary generation failed - please refer to the full paper)
+
+## Key Contributions
+- Please refer to the full paper for detailed contributions
+
+## Methodology
+Please refer to the full paper for methodology details.
+
+## Key Equations
+Please refer to the full paper.
+
+## Benchmark Results
+Please refer to the full paper.
+
+## Pros & Cons
+Please refer to the full paper for analysis.
+
+## Potential Impact
+Please refer to the full paper.
 """
 
     def create_markdown_summary(self, paper: Dict, summary: str, similar_papers: list = None) -> str:
