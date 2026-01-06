@@ -19,3 +19,5 @@ papers.db
 *.db
 paper_figures/
 *.pdf
+paper_summaries/*/
+!paper_summaries/README.md
