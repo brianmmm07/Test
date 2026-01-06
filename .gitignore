@@ -15,3 +15,5 @@ env/
 logs/
 *.log
 .DS_Store
+papers.db
+*.db

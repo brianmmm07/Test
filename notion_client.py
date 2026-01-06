@@ -30,16 +30,17 @@ class NotionClient:
             print("Make sure the database is shared with your Notion integration.")
             raise
 
-    def add_paper(self, paper: Dict, markdown_summary: str) -> bool:
+    def add_paper(self, paper: Dict, markdown_summary: str, similar_papers: list = None) -> str:
         """
         Add a paper summary to the Notion database.
 
         Args:
             paper: Paper dictionary
             markdown_summary: Full markdown summary
+            similar_papers: List of (paper_dict, similarity_score) tuples
 
         Returns:
-            True if successful, False otherwise
+            Notion page ID if successful, None otherwise
         """
         try:
             # Prepare authors string
@@ -105,12 +106,13 @@ class NotionClient:
                 children=children
             )
 
+            page_id = response['id']
             print(f"Added paper to Notion: {paper['title'][:50]}...")
-            return True
+            return page_id
 
         except Exception as e:
             print(f"Error adding paper to Notion: {e}")
-            return False
+            return None
 
     def _markdown_to_blocks(self, markdown: str) -> List[Dict]:
         """

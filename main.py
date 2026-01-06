@@ -4,6 +4,8 @@ from datetime import datetime
 from arxiv_fetcher import ArxivFetcher
 from summarizer import PaperSummarizer
 from notion_client import NotionClient
+from paper_database import PaperDatabase
+from similarity import PaperSimilarity
 from config import Config
 
 def run_daily_summary():
@@ -23,6 +25,8 @@ def run_daily_summary():
             token=Config.NOTION_TOKEN,
             database_id=Config.NOTION_DATABASE_ID
         )
+        paper_db = PaperDatabase()
+        similarity_calc = PaperSimilarity()
 
         # Verify Notion connection
         print("Verifying Notion connection...")
@@ -41,6 +45,11 @@ def run_daily_summary():
 
         print(f"\nProcessing {len(papers)} papers...\n")
 
+        # Get existing papers from database for similarity matching
+        print("Loading existing papers from database for similarity matching...")
+        existing_papers = paper_db.get_all_papers()
+        print(f"Found {len(existing_papers)} existing papers in database\n")
+
         # Process each paper
         successful = 0
         failed = 0
@@ -49,28 +58,81 @@ def run_daily_summary():
             print(f"[{i}/{len(papers)}] Processing: {paper['title'][:60]}...")
 
             try:
+                # Compute embedding for similarity
+                print("  Computing paper embedding...")
+                embedding = similarity_calc.compute_embedding(paper)
+                paper['embedding'] = embedding
+
+                # Find similar papers
+                if existing_papers:
+                    print("  Finding similar papers...")
+                    similar_papers = similarity_calc.find_similar_papers(
+                        paper,
+                        existing_papers,
+                        top_k=5
+                    )
+
+                    # Display similar papers
+                    if similar_papers:
+                        print(f"  Found {len(similar_papers)} similar papers:")
+                        for similar_paper, score in similar_papers[:3]:
+                            print(f"    - {similar_paper['title'][:50]}... (similarity: {score:.3f})")
+                else:
+                    similar_papers = []
+
                 # Generate summary
+                print("  Generating AI summary...")
                 summary = summarizer.summarize_paper(paper)
 
-                # Create markdown document
-                markdown = summarizer.create_markdown_summary(paper, summary)
+                # Create markdown document with similar papers
+                print("  Creating markdown with related papers...")
+                markdown = summarizer.create_markdown_summary(
+                    paper, summary, similar_papers=similar_papers
+                )
 
                 # Add to Notion
-                success = notion_client.add_paper(paper, markdown)
+                print("  Adding to Notion...")
+                notion_page_id = notion_client.add_paper(paper, markdown, similar_papers=similar_papers)
 
-                if success:
+                if notion_page_id:
+                    # Add to local database
+                    print("  Saving to local database...")
+                    paper_db.add_paper(paper, embedding=embedding, notion_page_id=notion_page_id)
+
+                    # Store similarity relationships
+                    for similar_paper, score in similar_papers:
+                        paper_db.add_similarity(paper['id'], similar_paper['id'], score)
+
                     successful += 1
+                    print("  ✓ Complete\n")
                 else:
                     failed += 1
+                    print("  ✗ Failed to add to Notion\n")
 
             except Exception as e:
-                print(f"Error processing paper: {e}")
+                print(f"  ✗ Error processing paper: {e}\n")
                 failed += 1
 
-        # Summary
+        # Display statistics
         print(f"\n{'='*60}")
-        print(f"Summary: {successful} papers added, {failed} failed")
+        print(f"Processing Summary:")
+        print(f"  - Papers added: {successful}")
+        print(f"  - Papers failed: {failed}")
         print(f"{'='*60}\n")
+
+        # Database statistics
+        stats = paper_db.get_statistics()
+        print("Database Statistics:")
+        print(f"  - Total papers: {stats['total_papers']}")
+        print(f"  - Papers by category:")
+        for category, count in stats['papers_by_category'].items():
+            print(f"    * {category}: {count}")
+        print(f"  - Date range: {stats['date_range']['earliest']} to {stats['date_range']['latest']}")
+        print(f"  - Similarity connections: {stats['total_similarities']}")
+        print(f"{'='*60}\n")
+
+        # Close database
+        paper_db.close()
 
     except ValueError as e:
         print(f"Configuration error: {e}")

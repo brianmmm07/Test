@@ -4,11 +4,23 @@ Automatically fetch, summarize, and send arXiv papers to your Notion database da
 
 ## Features
 
+### Core Features
 - 🔍 **Keyword-based Search**: Automatically search arXiv for papers matching your keywords
 - 🤖 **AI Summarization**: Generate concise, structured summaries using Claude AI
 - 📝 **Notion Integration**: Automatically add papers to your Notion database
 - ⏰ **Daily Scheduling**: Run automatically at a scheduled time each day
 - 🎯 **Customizable**: Configure keywords, number of papers, and schedule
+- 🏷️ **Categorized Organization**: Organize papers by custom categories (Image Generation, Video Generation, etc.)
+
+### Advanced Features  (NEW!)
+- 🗄️ **Local Paper Database**: Persistent SQLite database storing all papers with full metadata
+- 🔗 **Similarity Tracking**: Automatically find and display top-5 most similar papers
+- 📊 **Smart Indexing**: Organized by author, date, category for fast searching
+- 🔎 **Powerful Search**: Search by author, date range, category, or similarity
+- 📈 **Statistics**: Track your research collection with comprehensive stats
+- 🤝 **Related Papers**: Each paper shows related work with similarity scores
+
+👉 **[See FEATURES.md for detailed documentation](FEATURES.md)**
 
 ## Prerequisites
 
@@ -134,8 +146,30 @@ python scheduler.py
 
 This will:
 1. Run an initial summary immediately
-2. Schedule daily runs at the time specified in `SCHEDULE_TIME`
-3. Continue running until you press Ctrl+C
+2. Compute similarity and find related papers
+3. Store everything in local database
+4. Schedule daily runs at the time specified in `SCHEDULE_TIME`
+5. Continue running until you press Ctrl+C
+
+### Search Your Paper Database
+
+Query your local paper collection:
+
+```bash
+# Search by author
+python search.py --author "Geoffrey Hinton"
+
+# Search by date range
+python search.py --date-range 2024-01-01 2024-12-31
+
+# Find similar papers
+python search.py --similar "2401.12345"
+
+# Show database statistics
+python search.py --stats
+```
+
+👉 **[See FEATURES.md](FEATURES.md)** for complete search documentation.
 
 ### Run as Background Service (Linux/Mac)
 
