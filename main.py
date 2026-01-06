@@ -28,9 +28,12 @@ def run_daily_summary():
         print("Verifying Notion connection...")
         notion_client.create_database_if_needed()
 
-        # Fetch papers
-        print(f"\nSearching for papers with keywords: {', '.join(Config.KEYWORDS)}")
-        papers = arxiv_fetcher.fetch_recent_papers(Config.KEYWORDS)
+        # Fetch papers with categorized keywords
+        print(f"\nSearching for papers in {len(Config.KEYWORD_CATEGORIES)} categories:")
+        for category, keywords in Config.KEYWORD_CATEGORIES.items():
+            print(f"  - {category}: {', '.join(keywords)}")
+
+        papers = arxiv_fetcher.fetch_recent_papers(keyword_categories=Config.KEYWORD_CATEGORIES)
 
         if not papers:
             print("No new papers found.")

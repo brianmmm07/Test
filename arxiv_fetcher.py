@@ -15,12 +15,13 @@ class ArxivFetcher:
         """
         self.max_results = max_results
 
-    def fetch_recent_papers(self, keywords: List[str], days_back: int = 1) -> List[Dict]:
+    def fetch_recent_papers(self, keywords: List[str] = None, keyword_categories: Dict[str, List[str]] = None, days_back: int = 1) -> List[Dict]:
         """
         Fetch recent papers from arXiv for given keywords.
 
         Args:
-            keywords: List of search keywords
+            keywords: List of search keywords (for backward compatibility)
+            keyword_categories: Dict of {category: [keywords]} for categorized search
             days_back: Number of days to look back for papers
 
         Returns:
@@ -28,10 +29,22 @@ class ArxivFetcher:
         """
         all_papers = []
         cutoff_date = datetime.now() - timedelta(days=days_back)
+        paper_category_map = {}  # Track assigned categories to avoid duplicates
 
-        for keyword in keywords:
+        # Use categorized keywords if provided, otherwise fall back to simple list
+        if keyword_categories:
+            # Flatten categories into (keyword, category) pairs
+            keyword_list = []
+            for category, kw_list in keyword_categories.items():
+                for kw in kw_list:
+                    keyword_list.append((kw, category))
+        else:
+            # Backward compatibility: simple keyword list
+            keyword_list = [(kw, "General") for kw in (keywords or [])]
+
+        for keyword, category in keyword_list:
             try:
-                print(f"Searching arXiv for: {keyword}")
+                print(f"Searching arXiv for '{keyword}' (Category: {category})")
 
                 # Create search query
                 search = arxiv.Search(
@@ -47,12 +60,16 @@ class ArxivFetcher:
                     if paper.published.replace(tzinfo=None) < cutoff_date:
                         continue
 
+                    paper_id = paper.entry_id
+
                     # Check if we already have this paper
-                    if any(p['id'] == paper.entry_id for p in all_papers):
+                    if paper_id in paper_category_map:
+                        # Paper already found - skip to avoid duplicates
+                        # The first category match is kept
                         continue
 
                     paper_data = {
-                        'id': paper.entry_id,
+                        'id': paper_id,
                         'title': paper.title,
                         'authors': [author.name for author in paper.authors],
                         'summary': paper.summary,
@@ -60,11 +77,14 @@ class ArxivFetcher:
                         'pdf_url': paper.pdf_url,
                         'categories': paper.categories,
                         'primary_category': paper.primary_category,
-                        'keyword': keyword
+                        'keyword': keyword,
+                        'paper_category': category  # Add category classification
                     }
 
                     all_papers.append(paper_data)
+                    paper_category_map[paper_id] = category
 
+                    # Check count per keyword (not per category)
                     if len([p for p in all_papers if p['keyword'] == keyword]) >= self.max_results:
                         break
 

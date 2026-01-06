@@ -42,7 +42,7 @@ git push origin claude/arxiv-summarizer-notion-5mCuv
 | `ANTHROPIC_API_KEY` | Your Anthropic API key |
 | `NOTION_TOKEN` | Your Notion integration token |
 | `NOTION_DATABASE_ID` | Your Notion database ID |
-| `KEYWORDS` | `image generation,video generation` (or your keywords) |
+| `KEYWORDS` | Categorized: `Image Generation: image generation, diffusion model \| Video Generation: video generation` OR Simple: `image generation,video generation` |
 | `MAX_PAPERS_PER_KEYWORD` | `5` (optional, defaults to 5) |
 
 #### Step 3: Enable GitHub Actions

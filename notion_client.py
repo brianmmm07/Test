@@ -48,6 +48,9 @@ class NotionClient:
                 authors_str += f" et al."
 
             # Create page properties
+            # Use paper_category for organization, primary_category for arXiv classification
+            paper_category = paper.get('paper_category', 'General')
+
             properties = {
                 "Title": {
                     "title": [
@@ -74,7 +77,12 @@ class NotionClient:
                 },
                 "Category": {
                     "select": {
-                        "name": paper['primary_category']
+                        "name": paper_category  # Use our category classification
+                    }
+                },
+                "arXiv Category": {
+                    "select": {
+                        "name": paper['primary_category']  # Keep arXiv's category
                     }
                 },
                 "Keywords": {

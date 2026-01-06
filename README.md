@@ -48,7 +48,8 @@ pip install -r requirements.txt
    - **Title** (Title) - Default property
    - **Authors** (Text)
    - **Published** (Date)
-   - **Category** (Select)
+   - **Category** (Select) - Your custom categories (e.g., Image Generation, Video Generation)
+   - **arXiv Category** (Select) - arXiv's classification (e.g., cs.CV, cs.AI)
    - **Keywords** (Multi-select)
    - **URL** (URL)
 
@@ -84,7 +85,13 @@ Edit `.env` and fill in your credentials:
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 NOTION_TOKEN=your_notion_integration_token_here
 NOTION_DATABASE_ID=your_notion_database_id_here
-KEYWORDS=image generation,video generation,diffusion models
+
+# Categorized keywords (recommended):
+KEYWORDS=Image Generation: image generation, diffusion model, image editing | Video Generation: video generation, video extension, motion synthesis
+
+# Or simple format:
+# KEYWORDS=image generation,video generation,diffusion models
+
 MAX_PAPERS_PER_KEYWORD=5
 SCHEDULE_TIME=09:00
 ```
@@ -173,9 +180,23 @@ sudo systemctl start arxiv-summarizer
 
 Edit `.env` to customize:
 
-- **KEYWORDS**: Comma-separated list of search terms
+- **KEYWORDS**: Search keywords - supports two formats:
+  - **Categorized (recommended)**: Organize papers by category in Notion
+    - Format: `Category1: keyword1, keyword2 | Category2: keyword3, keyword4`
+    - Example: `Image Generation: image generation, diffusion model | Video Generation: video generation, motion synthesis`
+    - Papers matching multiple categories are assigned to the first matching category
+  - **Simple**: `keyword1, keyword2, keyword3` (creates single "General" category)
+
 - **MAX_PAPERS_PER_KEYWORD**: Maximum papers to fetch per keyword (default: 5)
 - **SCHEDULE_TIME**: Time to run daily in 24-hour format (e.g., "09:00")
+
+### Category Organization
+
+When using categorized keywords:
+- Papers are organized by your custom categories in Notion's **Category** field
+- If a paper matches multiple categories, it's placed in the first matching category
+- The **arXiv Category** field preserves arXiv's original classification (e.g., cs.CV, cs.AI)
+- This allows you to filter and view papers in Notion by your research interests
 
 ## Project Structure
 

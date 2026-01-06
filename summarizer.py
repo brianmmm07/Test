@@ -93,12 +93,16 @@ This paper titled "{paper['title']}" by {authors_str} was published on {paper['p
         if len(paper['authors']) > 5:
             authors_str += f" et al. ({len(paper['authors'])} authors)"
 
+        # Get category classification
+        paper_category = paper.get('paper_category', 'General')
+
         markdown = f"""# {paper['title']}
 
 **Authors:** {authors_str}
 **Published:** {paper['published']}
-**Category:** {paper['primary_category']}
-**Keywords:** {paper['keyword']}
+**Category:** {paper_category}
+**arXiv Category:** {paper['primary_category']}
+**Search Keyword:** {paper['keyword']}
 **PDF:** [{paper['id']}]({paper['pdf_url']})
 
 ---
